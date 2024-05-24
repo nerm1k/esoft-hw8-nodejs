@@ -4,7 +4,7 @@ ___
 ___
 ### APIs:
 #### 1. GET /users - получение списка всех пользователей. ####
-Запрос: http://localhost:3000/users/
+Запрос: http://localhost:3000/users/ <br />
 Пример ответа:
 ```json
 [
@@ -30,7 +30,7 @@ ___
 ```
 
 #### 2. GET /users/:id - получение информации о конкретном пользователе по ID. ####
-Пример запроса: http://localhost:3000/users/3
+Пример запроса: http://localhost:3000/users/3 <br />
 Пример ответа:
 ```json
 {
@@ -41,7 +41,7 @@ ___
 }
 ```
 #### 3. GET /users/age/:age - получение списка всех пользователей старше указанного возраста. ####
-Пример запроса: http://localhost:3000/users/age/19
+Пример запроса: http://localhost:3000/users/age/19 <br />
 Пример ответа:
 ```json
 [
@@ -60,7 +60,7 @@ ___
 ]
 ```
 #### 4. GET /users/domain/:domain - получение списка всех пользователей с определенным email доменом. ####
-Пример запроса: http://localhost:3000/users/domain/mail.ru
+Пример запроса: http://localhost:3000/users/domain/mail.ru <br />
 Пример ответа:
 ```json
 [
@@ -85,7 +85,7 @@ ___
 ]
 ```
 #### 5. GET /users/sorted - получение списка всех пользователей в алфавитном порядке по имени. ####
-Запрос: http://localhost:3000/users/sorted
+Запрос: http://localhost:3000/users/sorted <br />
 Пример ответа:
 ```json
 [
@@ -110,7 +110,7 @@ ___
 ]
 ```
 #### 6. POST /users - добавление нового пользователя. ####
-Запрос: http://localhost:3000/users/
+Запрос: http://localhost:3000/users/ <br />
 Пример body data
 ```json
 {
@@ -129,7 +129,7 @@ ___
 }
 ```
 #### 7. PUT /users/:id - обновление информации о пользователе по ID. ####
-Пример запроса: http://localhost:3000/users/3
+Пример запроса: http://localhost:3000/users/3 <br />
 Пример body data
 ```json
 {
@@ -146,7 +146,7 @@ ___
 }
 ```
 #### 8. DELETE /users/:id - удаление пользователя по ID. ####
-Пример запроса: http://localhost:3000/users/3
+Пример запроса: http://localhost:3000/users/3 <br />
 Пример ответа:
 ```json
 {
