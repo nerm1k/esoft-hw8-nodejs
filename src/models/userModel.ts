@@ -39,6 +39,22 @@ class UserModel {
         return this.users;
     }
 
+    getUserById(id: number){
+        return this.users.find(user => user.id == id);
+    }
+
+    getAllUsersAboveAge(age: number){
+        return this.users.filter(user => user.age > age);
+    }
+
+    getAllUsersWithDomain(domain: string){
+        return this.users.filter(user => user.email.split('@')[1] == domain);
+    }
+
+    getAllUsersAlphabeticalNames(){
+        return [...this.users].sort((a, b) => a.name.localeCompare(b.name));
+    }
+
     createUser(name: string, email: string, age: number){
         const user = {
             id: this.nextId,
@@ -51,29 +67,35 @@ class UserModel {
         return user;
     }
 
-    getUserById(id: number){
-        return this.users.find(user => user.id == id);
-    }
-
     updateUserById(id: number, name: string, email: string, age: number){
+        let updated = false;
+        let newUser = null;
+
         const newUsers = this.users.map(user => {
             if (user.id == id){
-                return ({
+                updated = true;
+                newUser = {
                     id: id,
                     name: name ? name : user.name,
                     email: email ? email : user.email,
                     age: age ? age : user.age
-                })
+                };
+                return newUser;
             } 
             return user;
         });
-        this.users = newUsers;
-        return newUsers;
+
+        if (updated){
+            this.users = newUsers;
+            return newUser;
+        }
+        
+        return null;
     }
 
     deleteUserById(id: number){
-        const userToDelete = users.find(user => user.id == id);
-        const newUsers = users.filter(user => user.id != id);
+        const userToDelete = this.users.find(user => user.id == id);
+        const newUsers = this.users.filter(user => user.id != id);
         this.users = newUsers;
         return userToDelete;
     }
