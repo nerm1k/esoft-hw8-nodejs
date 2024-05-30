@@ -11,8 +11,8 @@ class userService{
         return user;
     }
 
-    async getAllUsersAlphabeticalNames(){
-        const users = await UserModel.getAllUsersAlphabeticalNames();
+    async getAllUsersAlphabeticalNames(orderBy: string){
+        const users = await UserModel.getAllUsersAlphabeticalNames(orderBy);
         return users;
     }
 

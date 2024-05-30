@@ -43,8 +43,11 @@ class UserModel {
         return this.users.find(user => user.id == id);
     }
 
-    async getAllUsersAlphabeticalNames(){
-        return [...this.users].sort((a, b) => a.name.localeCompare(b.name));
+    async getAllUsersAlphabeticalNames(orderBy: string){
+        if (orderBy == 'asc'){
+            return [...this.users].sort((a, b) => a.name.localeCompare(b.name));
+        }
+        return [...this.users].sort((a, b) => b.name.localeCompare(a.name));
     }
 
     async getAllUsersAboveAge(age: number){

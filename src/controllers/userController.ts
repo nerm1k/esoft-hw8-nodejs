@@ -1,4 +1,3 @@
-import UserModel from "../models/userModel.js";
 import UserService from "../services/userService.js";
 import { Request, Response } from "express";
 
@@ -6,8 +5,30 @@ import { Request, Response } from "express";
 class UserController {
     async getAllUsers(req: Request, res: Response){
         try {
-            const users = await UserService.getAllUsers();
-            res.json(users);
+            if (req.query.sort_by == 'name' && req.query.order_by) {
+                const orderBy = req.query.order_by as string;
+                const users = await UserService.getAllUsersAlphabeticalNames(orderBy);
+                res.json(users);
+            } else if ('age_above' in req.query) {
+                const age = req.query.age_above as string;
+                const users = await UserService.getAllUsersAboveAge(+age);
+                if (users.length > 0) {
+                    res.json(users);
+                } else {
+                    res.status(404).json(`Пользователи с возрастом больше ${age} не найдены.`);
+                }
+            } else if ('domain' in req.query) {
+                const domain = req.query.domain as string;
+                const users = await UserService.getAllUsersWithDomain(domain);
+                if (users.length > 0) {
+                    res.json(users);
+                } else {
+                    res.status(404).json(`Пользователи с email домейном ${domain} не найдены.`);
+                }     
+            } else {
+                const users = await UserService.getAllUsers();
+                res.json(users);
+            }
         } catch (error: any) {
             res.status(500).json({error: error.message});
         }
@@ -23,45 +44,6 @@ class UserController {
             } else {
                 res.status(404).json(`Пользователи с id ${id} не найден.`);
             }
-        } catch (error: any) {
-            res.status(500).json({error: error.message});
-        }
-    }
-
-    async getAllUsersAlphabeticalNames(req: Request, res: Response){
-        try {
-            const users = await UserService.getAllUsersAlphabeticalNames();
-            res.json(users);
-        } catch (error: any){
-            res.status(500).json({error: error.message});
-        }
-    }
-
-    async getAllUsersAboveAge(req: Request, res: Response){
-        try {
-            const {age} = req.params;
-            const users = await UserService.getAllUsersAboveAge(+age);
-    
-            if (users.length > 0) {
-                res.json(users);
-            } else {
-                res.status(404).json(`Пользователи с возрастом больше ${age} не найдены.`);
-            }
-        } catch (error: any) {
-            res.status(500).json({error: error.message});
-        }
-    }
-
-    async getAllUsersWithDomain(req: Request, res: Response){
-        try {
-            const {domain} = req.params;
-            const users = await UserService.getAllUsersWithDomain(domain);
-    
-            if (users.length > 0) {
-                res.json(users);
-            } else {
-                res.status(404).json(`Пользователи с email домейном ${domain} не найдены.`);
-            }     
         } catch (error: any) {
             res.status(500).json({error: error.message});
         }
