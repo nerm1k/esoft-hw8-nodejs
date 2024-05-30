@@ -16,7 +16,7 @@ const users: User[] = [
         id: 2,
         name: 'Egor',
         email: 'egor@mail.ru',
-        age: 21
+        age: 23
     },
     {
         id: 3,
@@ -35,27 +35,27 @@ class UserModel {
         this.users = users;
     }
 
-    getAllUsers(){
+    async getAllUsers(){
         return this.users;
     }
 
-    getUserById(id: number){
+    async getUserById(id: number){
         return this.users.find(user => user.id == id);
     }
 
-    getAllUsersAboveAge(age: number){
-        return this.users.filter(user => user.age > age);
-    }
-
-    getAllUsersWithDomain(domain: string){
-        return this.users.filter(user => user.email.split('@')[1] == domain);
-    }
-
-    getAllUsersAlphabeticalNames(){
+    async getAllUsersAlphabeticalNames(){
         return [...this.users].sort((a, b) => a.name.localeCompare(b.name));
     }
 
-    createUser(name: string, email: string, age: number){
+    async getAllUsersAboveAge(age: number){
+        return this.users.filter(user => user.age > age);
+    }
+
+    async getAllUsersWithDomain(domain: string){
+        return this.users.filter(user => user.email.split('@')[1] == domain);
+    }
+
+    async createUser(name: string, email: string, age: number){
         const user = {
             id: this.nextId,
             name: name,
@@ -67,13 +67,11 @@ class UserModel {
         return user;
     }
 
-    updateUserById(id: number, name: string, email: string, age: number){
-        let updated = false;
+    async updateUserById(id: number, name: string, email: string, age: number){
         let newUser = null;
 
-        const newUsers = this.users.map(user => {
+        this.users = this.users.map(user => {
             if (user.id == id){
-                updated = true;
                 newUser = {
                     id: id,
                     name: name ? name : user.name,
@@ -85,19 +83,18 @@ class UserModel {
             return user;
         });
 
-        if (updated){
-            this.users = newUsers;
-            return newUser;
-        }
-        
-        return null;
+        return newUser;
     }
 
-    deleteUserById(id: number){
+    async deleteUserById(id: number){
         const userToDelete = this.users.find(user => user.id == id);
-        const newUsers = this.users.filter(user => user.id != id);
-        this.users = newUsers;
-        return userToDelete;
+
+        if (userToDelete) {
+            this.users = this.users.filter(user => user.id != id);
+            return userToDelete;
+        }
+
+        return null;
     }
 }
 

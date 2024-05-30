@@ -1,70 +1,117 @@
 import UserModel from "../models/userModel.js";
+import UserService from "../services/userService.js";
 import { Request, Response } from "express";
 
 
 class UserController {
-    getAllUsers(req: Request, res: Response){
-        const users = UserModel.getAllUsers();
-        return res.json(users);
-    }
-
-    getUserById(req: Request, res: Response){
-        const {id} = req.params;
-
-        if (id == 'sorted'){
-            const users = UserModel.getAllUsersAlphabeticalNames();
-            return res.json(users);
+    async getAllUsers(req: Request, res: Response){
+        try {
+            const users = await UserService.getAllUsers();
+            res.json(users);
+        } catch (error: any) {
+            res.status(500).json({error: error.message});
         }
+    }
 
-        const user = UserModel.getUserById(+id);
+    async getUserById(req: Request, res: Response){
+        try {
+            const {id} = req.params;
+            const user = await UserService.getUserById(+id);
 
-        if (user){
-            return res.json(user);
+            if (user) {
+                res.json(user);
+            } else {
+                res.status(404).json(`Пользователи с id ${id} не найден.`);
+            }
+        } catch (error: any) {
+            res.status(500).json({error: error.message});
         }
-
-        return res.status(400).json('Не найден');
     }
 
-    getAllUsersAboveAge(req: Request, res: Response){
-        const {age} = req.params;
-        console.log(age);
-        const users = UserModel.getAllUsersAboveAge(+age);
-        if (users.length > 0){
-            return res.json(users);
+    async getAllUsersAlphabeticalNames(req: Request, res: Response){
+        try {
+            const users = await UserService.getAllUsersAlphabeticalNames();
+            res.json(users);
+        } catch (error: any){
+            res.status(500).json({error: error.message});
         }
-        return res.status(400).json(`Пользователи с возрастом больше ${age} не найдены`);
     }
 
-    getAllUsersWithDomain(req: Request, res: Response){
-        const {domain} = req.params;
-        const users = UserModel.getAllUsersWithDomain(domain);
-        if (users.length > 0){
-            return res.json(users);
+    async getAllUsersAboveAge(req: Request, res: Response){
+        try {
+            const {age} = req.params;
+            const users = await UserService.getAllUsersAboveAge(+age);
+    
+            if (users.length > 0) {
+                res.json(users);
+            } else {
+                res.status(404).json(`Пользователи с возрастом больше ${age} не найдены.`);
+            }
+        } catch (error: any) {
+            res.status(500).json({error: error.message});
         }
-        return res.status(400).json(`Пользователи с email домейном ${domain} не найдены`);
     }
 
-    createUser(req: Request, res: Response){
-        const {name, email, age} = req.body;
-        if (!name || !email || !age){
-            return res.status(500).json('Не все поля переданы');
+    async getAllUsersWithDomain(req: Request, res: Response){
+        try {
+            const {domain} = req.params;
+            const users = await UserService.getAllUsersWithDomain(domain);
+    
+            if (users.length > 0) {
+                res.json(users);
+            } else {
+                res.status(404).json(`Пользователи с email домейном ${domain} не найдены.`);
+            }     
+        } catch (error: any) {
+            res.status(500).json({error: error.message});
         }
-        const user = UserModel.createUser(name, email, +age);
-        return res.json(user);
     }
 
-    updateUserById(req: Request, res: Response){
-        const {id} = req.params;
-        const {name, email, age} = req.body;
-        const user = UserModel.updateUserById(+id, name, email, +age);
-        if (user == null) return res.status(400).json(`Пользователь с id ${id} для обновления не найден`);
-        return res.json(user);
+    async createUser(req: Request, res: Response){
+        try {
+            const {name, email, age} = req.body;
+
+            if (!name || !email || !age) {
+                res.status(400).json('Не все поля переданы.');
+            } else {
+                const user = await UserService.createUser(name, email, +age);
+                res.status(201).json(user);
+            }
+        } catch (error: any) {
+            res.status(500).json({error: error.message});
+        }
     }
 
-    deleteUserById(req: Request, res: Response){
-        const {id} = req.params;
-        const user = UserModel.deleteUserById(+id);
-        return res.json(user);
+    async updateUserById(req: Request, res: Response){
+        try {
+            const {id} = req.params;
+            const {name, email, age} = req.body;
+
+            const user = await UserService.updateUserById(+id, name, email, +age);
+            
+            if (user) {
+                res.json(user);
+            } else {
+                res.status(404).json(`Пользователь с id ${id} для обновления не найден.`);
+            }
+        } catch (error: any) {
+            res.status(500).json({error: error.message});
+        }
+    }
+
+    async deleteUserById(req: Request, res: Response){
+        try {
+            const {id} = req.params;
+            const user = await UserService.deleteUserById(+id);
+
+            if (user) {
+                res.json(user);
+            } else {
+                res.status(404).json(`Пользователь с id ${id} для удаления не найден.`);
+            }
+        } catch (error: any) {
+            res.status(500).json({error: error.message});
+        }
     }
 }
 
