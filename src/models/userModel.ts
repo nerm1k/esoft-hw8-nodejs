@@ -3,7 +3,7 @@ interface User {
     name: string; 
     email: string; 
     age: number;
-}
+};
 
 const users: User[] = [
     {
@@ -24,7 +24,7 @@ const users: User[] = [
         email: 'alexey@mail.ru',
         age: 19
     }
-]
+];
 
 class UserModel {
     nextId: number;
