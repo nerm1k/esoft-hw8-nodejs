@@ -1,71 +1,113 @@
-import UserModel from "../models/userModel.js";
 import { Request, Response } from "express";
+import UserService from "../services/userService.js";
+import { HttpStatusCode } from "../utils/enums.js";
+import { isValidUser } from "../utils/validations.js";
 
+export default class UserController {
+    userService: UserService;
 
-class UserController {
-    getAllUsers(req: Request, res: Response){
-        const users = UserModel.getAllUsers();
-        return res.json(users);
+    constructor(userService: UserService){
+        this.userService = userService;
     }
 
-    getUserById(req: Request, res: Response){
-        const {id} = req.params;
-
-        if (id == 'sorted'){
-            const users = UserModel.getAllUsersAlphabeticalNames();
-            return res.json(users);
+    getAllUsers = async (req: Request, res: Response) => {
+        try {
+            if (req.query.sort_by == 'name' && req.query.order_by) {
+                const orderBy = req.query.order_by as string;
+                const users = await this.userService.getAllUsersAlphabeticalNames(orderBy);
+                res.json(users);
+            } else if ('age_above' in req.query) {
+                const age = req.query.age_above as string;
+                const users = await this.userService.getAllUsersAboveAge(+age);
+                if (users.length > 0) {
+                    res.json(users);
+                } else {
+                    res.status(HttpStatusCode.NOT_FOUND).json(`Пользователи с возрастом больше ${age} не найдены.`);
+                }
+            } else if ('domain' in req.query) {
+                const domain = req.query.domain as string;
+                const users = await this.userService.getAllUsersWithDomain(domain);
+                if (users.length > 0) {
+                    res.json(users);
+                } else {
+                    res.status(HttpStatusCode.NOT_FOUND).json(`Пользователи с email домейном ${domain} не найдены.`);
+                }     
+            } else {
+                const users = await this.userService.getAllUsers();
+                res.json(users);
+            }
+        } catch (error: any) {
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({error: error.message});
         }
+    }
 
-        const user = UserModel.getUserById(+id);
+    getUserById = async (req: Request, res: Response) => {
+        try {
+            const {id} = req.params;
+            const user = await this.userService.getUserById(+id);
 
-        if (user){
-            return res.json(user);
+            if (user) {
+                res.json(user);
+            } else {
+                res.status(HttpStatusCode.NOT_FOUND).json(`Пользователи с id ${id} не найден.`);
+            }
+        } catch (error: any) {
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({error: error.message});
         }
-
-        return res.status(400).json('Не найден');
     }
 
-    getAllUsersAboveAge(req: Request, res: Response){
-        const {age} = req.params;
-        console.log(age);
-        const users = UserModel.getAllUsersAboveAge(+age);
-        if (users.length > 0){
-            return res.json(users);
+    createUser = async (req: Request, res: Response) => {
+        try {
+            const {name, email, age} = req.body;
+
+            if (!name || !email || !age) {
+                res.status(HttpStatusCode.BAD_REQUEST).json('Не все поля переданы.');
+            } else {
+                if (!isValidUser(name, email, age)) {
+                    res.status(HttpStatusCode.BAD_REQUEST).json('Не все поля корректны.')
+                } else {
+                    const user = await this.userService.createUser(name, email, +age);
+                    res.status(HttpStatusCode.CREATED).json(user);
+                }
+            }
+        } catch (error: any) {
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({error: error.message});
         }
-        return res.status(400).json(`Пользователи с возрастом больше ${age} не найдены`);
     }
 
-    getAllUsersWithDomain(req: Request, res: Response){
-        const {domain} = req.params;
-        const users = UserModel.getAllUsersWithDomain(domain);
-        if (users.length > 0){
-            return res.json(users);
+    updateUserById = async (req: Request, res: Response) => {
+        try {
+            const {id} = req.params;
+            const {name, email, age} = req.body;
+
+            if (!isValidUser(name, email, age)) {
+                res.status(HttpStatusCode.BAD_REQUEST).json('Не все поля корректны.')
+            } else {
+                const user = await this.userService.updateUserById(+id, name, email, +age);
+
+                if (user) {
+                    res.json(user);
+                } else {
+                    res.status(HttpStatusCode.NOT_FOUND).json(`Пользователь с id ${id} для обновления не найден.`);
+                }
+            }
+        } catch (error: any) {
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({error: error.message});
         }
-        return res.status(400).json(`Пользователи с email домейном ${domain} не найдены`);
     }
 
-    createUser(req: Request, res: Response){
-        const {name, email, age} = req.body;
-        if (!name || !email || !age){
-            return res.status(500).json('Не все поля переданы');
+    deleteUserById = async (req: Request, res: Response) => {
+        try {
+            const {id} = req.params;
+            const user = await this.userService.deleteUserById(+id);
+
+            if (user) {
+                res.json(user);
+            } else {
+                res.status(HttpStatusCode.NOT_FOUND).json(`Пользователь с id ${id} для удаления не найден.`);
+            }
+        } catch (error: any) {
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({error: error.message});
         }
-        const user = UserModel.createUser(name, email, +age);
-        return res.json(user);
-    }
-
-    updateUserById(req: Request, res: Response){
-        const {id} = req.params;
-        const {name, email, age} = req.body;
-        const user = UserModel.updateUserById(+id, name, email, +age);
-        if (user == null) return res.status(400).json(`Пользователь с id ${id} для обновления не найден`);
-        return res.json(user);
-    }
-
-    deleteUserById(req: Request, res: Response){
-        const {id} = req.params;
-        const user = UserModel.deleteUserById(+id);
-        return res.json(user);
     }
 }
-
-export default new UserController();
