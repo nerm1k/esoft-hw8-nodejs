@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import UserService from "../services/userService.js";
+import { HttpStatusCode } from "../utils/enums.js";
+import { isValidUser } from "../utils/validations.js";
 
 export default class UserController {
     userService: UserService;
@@ -20,7 +22,7 @@ export default class UserController {
                 if (users.length > 0) {
                     res.json(users);
                 } else {
-                    res.status(404).json(`Пользователи с возрастом больше ${age} не найдены.`);
+                    res.status(HttpStatusCode.NOT_FOUND).json(`Пользователи с возрастом больше ${age} не найдены.`);
                 }
             } else if ('domain' in req.query) {
                 const domain = req.query.domain as string;
@@ -28,14 +30,14 @@ export default class UserController {
                 if (users.length > 0) {
                     res.json(users);
                 } else {
-                    res.status(404).json(`Пользователи с email домейном ${domain} не найдены.`);
+                    res.status(HttpStatusCode.NOT_FOUND).json(`Пользователи с email домейном ${domain} не найдены.`);
                 }     
             } else {
                 const users = await this.userService.getAllUsers();
                 res.json(users);
             }
         } catch (error: any) {
-            res.status(500).json({error: error.message});
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({error: error.message});
         }
     }
 
@@ -47,10 +49,10 @@ export default class UserController {
             if (user) {
                 res.json(user);
             } else {
-                res.status(404).json(`Пользователи с id ${id} не найден.`);
+                res.status(HttpStatusCode.NOT_FOUND).json(`Пользователи с id ${id} не найден.`);
             }
         } catch (error: any) {
-            res.status(500).json({error: error.message});
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({error: error.message});
         }
     }
 
@@ -59,13 +61,17 @@ export default class UserController {
             const {name, email, age} = req.body;
 
             if (!name || !email || !age) {
-                res.status(400).json('Не все поля переданы.');
+                res.status(HttpStatusCode.BAD_REQUEST).json('Не все поля переданы.');
             } else {
-                const user = await this.userService.createUser(name, email, +age);
-                res.status(201).json(user);
+                if (!isValidUser(name, email, age)) {
+                    res.status(HttpStatusCode.BAD_REQUEST).json('Не все поля корректны.')
+                } else {
+                    const user = await this.userService.createUser(name, email, +age);
+                    res.status(HttpStatusCode.CREATED).json(user);
+                }
             }
         } catch (error: any) {
-            res.status(500).json({error: error.message});
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({error: error.message});
         }
     }
 
@@ -74,15 +80,19 @@ export default class UserController {
             const {id} = req.params;
             const {name, email, age} = req.body;
 
-            const user = await this.userService.updateUserById(+id, name, email, +age);
-            
-            if (user) {
-                res.json(user);
+            if (!isValidUser(name, email, age)) {
+                res.status(HttpStatusCode.BAD_REQUEST).json('Не все поля корректны.')
             } else {
-                res.status(404).json(`Пользователь с id ${id} для обновления не найден.`);
+                const user = await this.userService.updateUserById(+id, name, email, +age);
+
+                if (user) {
+                    res.json(user);
+                } else {
+                    res.status(HttpStatusCode.NOT_FOUND).json(`Пользователь с id ${id} для обновления не найден.`);
+                }
             }
         } catch (error: any) {
-            res.status(500).json({error: error.message});
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({error: error.message});
         }
     }
 
@@ -94,10 +104,10 @@ export default class UserController {
             if (user) {
                 res.json(user);
             } else {
-                res.status(404).json(`Пользователь с id ${id} для удаления не найден.`);
+                res.status(HttpStatusCode.NOT_FOUND).json(`Пользователь с id ${id} для удаления не найден.`);
             }
         } catch (error: any) {
-            res.status(500).json({error: error.message});
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({error: error.message});
         }
     }
 }

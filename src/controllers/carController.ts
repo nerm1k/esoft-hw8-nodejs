@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import CarService from "../services/carService.js";
+import { HttpStatusCode } from "../utils/enums.js";
 
 export default class CarController{
     carService: CarService;
@@ -16,20 +17,20 @@ export default class CarController{
                 const brand = req.query.brand as string;
                 const cars = await this.carService.getCarsByBrandByUserId(+id, brand);
                 if (cars.length > 0) {
-                    res.status(200).json(cars);
+                    res.status(HttpStatusCode.OK).json(cars);
                 } else {
-                    res.status(404).json(`У пользователя с id ${id} нет машин ${brand}`);
+                    res.status(HttpStatusCode.NOT_FOUND).json(`У пользователя с id ${id} нет машин ${brand}`);
                 }
             } else {
                 const cars = await this.carService.getCarsByUserId(+id);
                 if (cars.length > 0) {
-                    res.status(200).json(cars);
+                    res.status(HttpStatusCode.CREATED).json(cars);
                 } else {
-                    res.status(404).json(`У пользователя с id ${id} нет машин`);
+                    res.status(HttpStatusCode.NOT_FOUND).json(`У пользователя с id ${id} нет машин`);
                 }
             }
         } catch (error: any) {
-            res.status(500).json({error: error.message});
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({error: error.message});
         }
     }
 
@@ -39,12 +40,12 @@ export default class CarController{
             const car = await this.carService.getCarByUserId(+id, +carId);
 
             if (car) {
-                return res.status(200).json(car);
+                return res.status(HttpStatusCode.OK).json(car);
             } else {
-                return res.status(404).json(`У пользователя с id ${id} нет машины с id ${carId}`);
+                return res.status(HttpStatusCode.NOT_FOUND).json(`У пользователя с id ${id} нет машины с id ${carId}`);
             }
         } catch (error: any) {
-            res.status(500).json({error: error.message});
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({error: error.message});
         }
     }
 }
