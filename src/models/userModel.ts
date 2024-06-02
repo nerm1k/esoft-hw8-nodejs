@@ -26,7 +26,7 @@ const users: User[] = [
     }
 ];
 
-class UserModel {
+export default class UserModel {
     nextId: number;
     users: User[];
 
@@ -100,5 +100,3 @@ class UserModel {
         return null;
     }
 }
-
-export default new UserModel();

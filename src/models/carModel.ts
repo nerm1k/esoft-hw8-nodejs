@@ -19,6 +19,11 @@ const cars: Car[] = [
         id: 3,
         brand: 'Audi',
         model: 'RS6'
+    },
+    {
+        id: 4,
+        brand: 'Porsche',
+        model: '911'
     }
 ];
 
@@ -29,7 +34,11 @@ const usersCars = [
     },
     {
         userID: 1,
-        carID: 3
+        carID: 2
+    },
+    {
+        userID: 1,
+        carID: 4
     },
     {
         userID: 3,
@@ -37,7 +46,7 @@ const usersCars = [
     },
 ];
 
-class CarModel {
+export default class CarModel {
     cars: Car[];
     usersCars;
 
@@ -49,6 +58,11 @@ class CarModel {
     async getCarsByUserId(id: number){
         const userCarIDs = usersCars.filter(userCar => userCar.userID == id).map(userCar => userCar.carID);
         return cars.filter(car => userCarIDs.includes(car.id));
+    }
+
+    async getCarsByBrandByUserId(id: number, brand: string){
+        const userCarIDs = usersCars.filter(userCar => userCar.userID == id).map(userCar => userCar.carID);
+        return cars.filter(car => userCarIDs.includes(car.id)).filter(car => car.brand == brand);
     }
 
     async getCarByUserId(id: number, carId: number){
@@ -67,5 +81,3 @@ class CarModel {
         return carToFind;
     }
 }
-
-export default new CarModel();
